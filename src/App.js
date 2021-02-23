@@ -1,24 +1,43 @@
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
+import {BrowserRouter as Router, Switch, Route} from 'react-router-dom';
+import Header from './components/Header/Header';
+import ProductList from './components/Products/ProductList';
+import ProductDetail from './components/Products/ProductDetail';
 import './App.css';
 
 function App() {
+  const [loadedProducts, setLoadedProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:5000/products');
+
+      const responseData = await response.json();
+
+      setLoadedProducts(responseData.products);
+      setIsLoading(false);
+    };
+
+    fetchProducts();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Header />
+      <Switch>
+        <Route path="/" exact>
+          <React.Fragment>
+            <main>
+              {isLoading && <p className="loader">Loading...</p>}
+              {!isLoading && <ProductList items={loadedProducts} />}
+            </main>
+          </React.Fragment>
+        </Route>
+        <Route path="/detail/:id" component={ProductDetail} />
+      </Switch>
+    </Router>
   );
 }
 
